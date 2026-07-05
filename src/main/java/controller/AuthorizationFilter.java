@@ -95,7 +95,7 @@ public class AuthorizationFilter implements Filter {
         response.getWriter().write(
             "<!DOCTYPE html><html><head><meta charset='UTF-8'>"
             + "<title>403 - Không có quyền</title>"
-            + "<link rel='stylesheet' href='" + ctx + "/css/style.css'>"
+            + "<link rel='stylesheet' href='" + ctx + "/css/app.css'>"
             + "</head><body><div class='app' style='display:block;padding:40px;'>"
             + "<div class='card' style='max-width:520px;margin:80px auto;text-align:center;'>"
             + "<h1 style='color:#dc2626;'>⛔ 403 — Không có quyền</h1>"

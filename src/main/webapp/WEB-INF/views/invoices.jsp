@@ -5,18 +5,23 @@
 
 <%@include file="/WEB-INF/layout/main.jsp"%>
 
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-    <h2 style="margin:0;">Hóa đơn</h2>
-    <a class="btn btn-primary" href="${pageContext.request.contextPath}/invoices?action=new">+ Tạo hóa đơn</a>
+<div class="page-header">
+    <div>
+        <h2 class="page-header__title">Hóa đơn</h2>
+        <div class="page-header__sub">Theo dõi và quản lý đơn hàng</div>
+    </div>
+    <a class="btn btn-primary btn--pill" href="${pageContext.request.contextPath}/invoices?action=new">
+        <span aria-hidden="true">＋</span> Tạo hóa đơn
+    </a>
 </div>
 
 <form method="get" action="${pageContext.request.contextPath}/invoices" class="filter-bar">
-    <label style="margin:0;">Từ</label>
+    <label>Từ</label>
     <input type="date" name="from" value="<c:out value='${from}'/>"/>
-    <label style="margin:0;">Đến</label>
+    <label>Đến</label>
     <input type="date" name="to" value="<c:out value='${to}'/>"/>
-    <button type="submit" class="btn btn-primary">Lọc</button>
-    <a class="btn btn-sm" style="background:#e2e8f0;color:#0f172a;" href="${pageContext.request.contextPath}/invoices">Xóa lọc</a>
+    <button type="submit" class="btn btn-primary btn--pill btn-sm">Lọc</button>
+    <a class="btn btn-secondary btn-sm" href="${pageContext.request.contextPath}/invoices">Xóa lọc</a>
 </form>
 
 <c:if test="${not empty sessionScope.flash}">
@@ -24,53 +29,63 @@
     <c:remove var="flash" scope="session"/>
 </c:if>
 
-<div class="card" style="margin-top:0;">
-    <table class="tbl">
-        <thead>
-            <tr>
-                <th>Mã HĐ</th>
-                <th>Khách hàng</th>
-                <th>Người tạo</th>
-                <th>Tổng tiền</th>
-                <th>Trạng thái</th>
-                <th style="width:200px;">Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            <c:choose>
-                <c:when test="${empty list}">
-                    <tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px;">Chưa có hóa đơn nào.</td></tr>
-                </c:when>
-                <c:otherwise>
-                    <c:forEach var="i" items="${list}">
-                        <tr>
-                            <td><b>${i.code}</b></td>
-                            <td>${i.customerName}</td>
-                            <td>${i.accountName}</td>
-                            <td><fmt:formatNumber value="${i.totalAmount}" pattern="#,##0"/> ₫</td>
-                            <td>
-                                <c:choose>
-                                    <c:when test="${i.status == 'DONE'}"><span style="color:#16a34a;font-weight:600;">Hoàn thành</span></c:when>
-                                    <c:when test="${i.status == 'CANCEL'}"><span style="color:#dc2626;font-weight:600;">Đã hủy</span></c:when>
-                                    <c:otherwise><span style="color:#d97706;font-weight:600;">Chờ xử lý</span></c:otherwise>
-                                </c:choose>
-                            </td>
-                            <td>
-                                <a class="btn btn-sm btn-edit" href="${pageContext.request.contextPath}/invoices?action=view&id=${i.id}">Xem</a>
-                                <c:if test="${sessionScope.user.role == 'admin'}">
-                                    <form method="post" style="display:inline;" onsubmit="return confirm('Xóa hóa đơn ${i.code}?');" action="${pageContext.request.contextPath}/invoices">
-                                        <input type="hidden" name="action" value="delete"/>
-                                        <input type="hidden" name="id" value="${i.id}"/>
-                                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                                    </form>
-                                </c:if>
-                            </td>
-                        </tr>
-                    </c:forEach>
-                </c:otherwise>
-            </c:choose>
-        </tbody>
-    </table>
+<div class="card card--flat" style="padding:0;">
+    <div class="table-wrap">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Mã HĐ</th>
+                    <th>Khách hàng</th>
+                    <th>Người tạo</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th style="width:200px;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:choose>
+                    <c:when test="${empty list}">
+                        <tr><td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-state__icon">🧾</div>
+                                <p class="empty-state__title">Chưa có hóa đơn nào</p>
+                                <p class="empty-state__sub">Bấm "Tạo hóa đơn" để bắt đầu.</p>
+                            </div>
+                        </td></tr>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="i" items="${list}">
+                            <tr>
+                                <td><b>${i.code}</b></td>
+                                <td>${i.customerName}</td>
+                                <td>${i.accountName}</td>
+                                <td class="col-money"><fmt:formatNumber value="${i.totalAmount}" pattern="#,##0"/> ₫</td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${i.status == 'DONE'}"><span class="badge badge--done">Hoàn thành</span></c:when>
+                                        <c:when test="${i.status == 'CANCEL'}"><span class="badge badge--cancel">Đã hủy</span></c:when>
+                                        <c:otherwise><span class="badge badge--pending">Chờ xử lý</span></c:otherwise>
+                                    </c:choose>
+                                </td>
+                                <td>
+                                    <div class="btn-row">
+                                        <a class="btn btn-xs btn-info" href="${pageContext.request.contextPath}/invoices?action=view&id=${i.id}">Xem</a>
+                                        <c:if test="${sessionScope.user.role == 'admin'}">
+                                            <form method="post" style="display:inline;" onsubmit="return confirm('Xóa hóa đơn ${i.code}?');" action="${pageContext.request.contextPath}/invoices">
+                                                <input type="hidden" name="action" value="delete"/>
+                                                <input type="hidden" name="id" value="${i.id}"/>
+                                                <button type="submit" class="btn btn-xs btn-danger">Xóa</button>
+                                            </form>
+                                        </c:if>
+                                    </div>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <%@include file="/WEB-INF/layout/main-end.jsp"%>
