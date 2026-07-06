@@ -24,6 +24,10 @@
     <a class="btn btn-secondary btn-sm" href="${pageContext.request.contextPath}/invoices">Xóa lọc</a>
 </form>
 
+<c:if test="${not empty sessionScope.flashError}">
+    <div class="alert alert-danger">${sessionScope.flashError}</div>
+    <c:remove var="flashError" scope="session"/>
+</c:if>
 <c:if test="${not empty sessionScope.flash}">
     <div class="alert alert-success">${sessionScope.flash}</div>
     <c:remove var="flash" scope="session"/>

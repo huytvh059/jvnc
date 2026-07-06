@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.Customer;
+import util.FlashUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -65,15 +66,32 @@ public class CustomerServlet extends HttpServlet {
                 dao.update(c);
                 flash(req, "Đã cập nhật khách hàng #" + c.getId());
             } else if ("delete".equals(action)) {
-                dao.delete(parseInt(req.getParameter("id")));
-                flash(req, "Đã xóa khách hàng.");
+                handleDelete(req, parseInt(req.getParameter("id")));
             }
             redirectList(req, resp);
         } catch (SQLException e) {
-            req.setAttribute("error", "Lỗi CSDL: " + e.getMessage());
+            req.setAttribute("error", FlashUtil.friendlyMessage(e, "Lỗi CSDL."));
             req.setAttribute("form", new Customer());
             req.setAttribute("mode", "create");
             req.getRequestDispatcher("/WEB-INF/views/customer-form.jsp").forward(req, resp);
+        }
+    }
+
+    private void handleDelete(HttpServletRequest req, int id) throws SQLException {
+        if (id <= 0) {
+            FlashUtil.error(req, "ID khách hàng không hợp lệ.");
+            return;
+        }
+        try {
+            int n = dao.delete(id);
+            if (n == 0) {
+                FlashUtil.error(req, "Khách hàng không tồn tại hoặc đã bị xóa.");
+            } else {
+                FlashUtil.success(req, "Đã xóa khách hàng.");
+            }
+        } catch (SQLException e) {
+            FlashUtil.error(req, FlashUtil.friendlyMessage(e,
+                    "Không thể xóa khách hàng."));
         }
     }
 

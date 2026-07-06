@@ -14,6 +14,7 @@ import model.Customer;
 import model.Invoice;
 import model.InvoiceDetail;
 import model.Product;
+import util.FlashUtil;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -140,11 +141,19 @@ public class InvoiceServlet extends HttpServlet {
                 return;
             } else if ("delete".equals(action)) {
                 int id = parseInt(req.getParameter("id"));
-                try {
-                    dao.delete(id);
-                    flash(req, "Đã xóa hóa đơn #" + id);
-                } catch (SQLException e) {
-                    flash(req, "Không thể xóa: " + e.getMessage());
+                if (id <= 0) {
+                    FlashUtil.error(req, "ID hóa đơn không hợp lệ.");
+                } else {
+                    try {
+                        int n = dao.delete(id);
+                        if (n == 0) {
+                            FlashUtil.error(req, "Hóa đơn không tồn tại hoặc đã bị xóa.");
+                        } else {
+                            FlashUtil.success(req, "Đã xóa hóa đơn #" + id + ".");
+                        }
+                    } catch (SQLException e) {
+                        FlashUtil.error(req, FlashUtil.friendlyMessage(e, "Không thể xóa hóa đơn."));
+                    }
                 }
                 resp.sendRedirect(req.getContextPath() + "/invoices");
                 return;

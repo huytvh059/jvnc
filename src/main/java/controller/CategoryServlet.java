@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.Category;
+import util.FlashUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -45,10 +46,14 @@ public class CategoryServlet extends HttpServlet {
             } else if ("delete".equals(action)) {
                 int id = parseInt(req.getParameter("id"));
                 try {
-                    dao.delete(id);
-                    req.getSession().setAttribute("flash", "Đã xóa danh mục #" + id);
+                    int n = dao.delete(id);
+                    if (n == 0) {
+                        FlashUtil.error(req, "Danh mục không tồn tại hoặc đã bị xóa.");
+                    } else {
+                        FlashUtil.success(req, "Đã xóa danh mục #" + id + ".");
+                    }
                 } catch (SQLException e) {
-                    req.getSession().setAttribute("flash", "Không thể xóa: " + e.getMessage());
+                    FlashUtil.error(req, FlashUtil.friendlyMessage(e, "Không thể xóa danh mục."));
                 }
                 resp.sendRedirect(req.getContextPath() + "/categories");
             } else {
@@ -84,15 +89,33 @@ public class CategoryServlet extends HttpServlet {
                 dao.update(c);
                 req.getSession().setAttribute("flash", "Đã cập nhật danh mục #" + c.getId());
             } else if ("delete".equals(action)) {
-                dao.delete(parseInt(req.getParameter("id")));
-                req.getSession().setAttribute("flash", "Đã xóa danh mục.");
+                handleDelete(req, parseInt(req.getParameter("id")));
+            } else {
+                // unknown action -> về list
             }
             resp.sendRedirect(req.getContextPath() + "/categories");
         } catch (SQLException e) {
-            req.setAttribute("error", "Lỗi CSDL: " + e.getMessage());
+            req.setAttribute("error", FlashUtil.friendlyMessage(e, "Lỗi CSDL."));
             req.setAttribute("formCategory", new Category());
             req.setAttribute("mode", "create");
             req.getRequestDispatcher("/WEB-INF/views/category-form.jsp").forward(req, resp);
+        }
+    }
+
+    private void handleDelete(HttpServletRequest req, int id) throws SQLException {
+        if (id <= 0) {
+            FlashUtil.error(req, "ID danh mục không hợp lệ.");
+            return;
+        }
+        try {
+            int n = dao.delete(id);
+            if (n == 0) {
+                FlashUtil.error(req, "Danh mục không tồn tại hoặc đã bị xóa.");
+            } else {
+                FlashUtil.success(req, "Đã xóa danh mục #" + id + ".");
+            }
+        } catch (SQLException e) {
+            FlashUtil.error(req, FlashUtil.friendlyMessage(e, "Không thể xóa danh mục."));
         }
     }
 

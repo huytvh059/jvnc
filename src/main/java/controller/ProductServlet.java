@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.Product;
+import util.FlashUtil;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -60,25 +61,50 @@ public class ProductServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         String action = req.getParameter("action");
         try {
+            if ("delete".equals(action)) {
+                handleDelete(req, parseInt(req.getParameter("id")));
+                redirectList(req, resp);
+                return;
+            }
             Product p = bind(req);
             if ("create".equals(action)) {
                 dao.insert(p);
-                flash(req, "Đã thêm sản phẩm.");
+                FlashUtil.success(req, "Đã thêm sản phẩm.");
             } else if ("update".equals(action)) {
                 p.setId(parseInt(req.getParameter("id")));
                 dao.update(p);
-                flash(req, "Đã cập nhật sản phẩm #" + p.getId());
-            } else if ("delete".equals(action)) {
-                dao.delete(parseInt(req.getParameter("id")));
-                flash(req, "Đã xóa sản phẩm.");
+                FlashUtil.success(req, "Đã cập nhật sản phẩm #" + p.getId());
             }
             redirectList(req, resp);
-        } catch (Exception e) {
-            req.setAttribute("error", "Lỗi: " + e.getMessage());
+        } catch (SQLException e) {
+            req.setAttribute("error", FlashUtil.friendlyMessage(e, "Lỗi CSDL."));
             req.setAttribute("form", new Product());
             try { req.setAttribute("categories", catDao.findAll()); } catch (SQLException ignored) {}
             req.setAttribute("mode", "create");
             req.getRequestDispatcher("/WEB-INF/views/product-form.jsp").forward(req, resp);
+        } catch (NumberFormatException e) {
+            req.setAttribute("error", "Dữ liệu không hợp lệ: " + e.getMessage());
+            req.setAttribute("form", new Product());
+            try { req.setAttribute("categories", catDao.findAll()); } catch (SQLException ignored) {}
+            req.setAttribute("mode", "create");
+            req.getRequestDispatcher("/WEB-INF/views/product-form.jsp").forward(req, resp);
+        }
+    }
+
+    private void handleDelete(HttpServletRequest req, int id) throws SQLException {
+        if (id <= 0) {
+            FlashUtil.error(req, "ID sản phẩm không hợp lệ.");
+            return;
+        }
+        try {
+            int n = dao.delete(id);
+            if (n == 0) {
+                FlashUtil.error(req, "Sản phẩm không tồn tại hoặc đã bị xóa.");
+            } else {
+                FlashUtil.success(req, "Đã xóa sản phẩm.");
+            }
+        } catch (SQLException e) {
+            FlashUtil.error(req, FlashUtil.friendlyMessage(e, "Không thể xóa sản phẩm."));
         }
     }
 

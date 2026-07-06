@@ -19,6 +19,10 @@
 <c:if test="${sessionScope.user.role != 'admin'}">
     <div class="alert alert-warning">Bạn đang đăng nhập với quyền <b>staff</b> — chỉ xem.</div>
 </c:if>
+<c:if test="${not empty sessionScope.flashError}">
+    <div class="alert alert-danger">${sessionScope.flashError}</div>
+    <c:remove var="flashError" scope="session"/>
+</c:if>
 <c:if test="${not empty sessionScope.flash}">
     <div class="alert alert-success">${sessionScope.flash}</div>
     <c:remove var="flash" scope="session"/>

@@ -26,6 +26,10 @@
     <button type="submit" class="btn btn-primary btn--pill btn-sm">Tìm kiếm</button>
 </form>
 
+<c:if test="${not empty sessionScope.flashError}">
+    <div class="alert alert-danger">${sessionScope.flashError}</div>
+    <c:remove var="flashError" scope="session"/>
+</c:if>
 <c:if test="${not empty sessionScope.flash}">
     <div class="alert alert-success">${sessionScope.flash}</div>
     <c:remove var="flash" scope="session"/>
