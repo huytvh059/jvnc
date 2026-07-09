@@ -224,4 +224,5 @@ Sau khi tạo CSDL và seed dữ liệu mẫu (xem script SQL đi kèm — `data
 
 ## License
 
-Đồ án học tập — Văn Hiến University. Vui lòng liên hệ tác giả trước khi sử dụng cho mục đích thương mại.
+Project học tập — Văn Hiến University. Vui lòng liên hệ tác giả trước khi sử dụng cho mục đích thương mại.
+email: huytvh059@gmail.com
